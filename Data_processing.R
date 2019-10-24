@@ -84,3 +84,15 @@ for (i in 30:226){
 }
 
 write.csv(Water_Nexus, "WN2_v8.csv", row.names = FALSE)
+
+# Remove NA columns
+
+for (i in 1:ncol(Water_Nexus)){
+    if(sum(!is.na(Water_Nexus[,i]))==0){
+        Water_Nexus[,i] <- NULL
+    }
+}
+
+write.csv(Water_Nexus, "WN2_v9.csv", row.names = FALSE)
+
+
