@@ -20,7 +20,7 @@ library(DT)
 library(rworldmap)
 library(usethis)
 
-Water_Nexus <- read_csv('WN2_v9.csv', locale = readr::locale(encoding = "latin1"))
+Water_Nexus <- read_csv('WN2_v10.csv', locale = readr::locale(encoding = "latin1"))
 first_country <- which(colnames(Water_Nexus) == 'Benin')
 last_country <- which(colnames(Water_Nexus) == 'Switzerland')
 first_lat <- which(colnames(Water_Nexus) == 'lat_Benin')
@@ -119,6 +119,19 @@ ui <- dashboardPage(skin = "green",
                                img(align = "left|bottom",
                                    style = "max-width:50%",
                                    src = "Logo.jpg") 
+                        )
+                    ),
+                    fluidRow(
+                        column(6,
+                               h2("Through"),
+                               box(
+                                   img(style = "max-width:100%",
+                                       src = "Logo3.jpg")
+                               ),
+                               box(
+                                   img(style = "max-width:100%",
+                                       src = "Logo4.png")
+                               )
                         )
                     )
             ), # end of About tabItem
