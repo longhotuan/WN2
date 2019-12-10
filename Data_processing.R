@@ -3,7 +3,7 @@ library(tidyverse)
 # WN <- read_csv("WN2_v5.csv", locale = readr::locale(encoding = "latin1"))
 
 
-Water_Nexus <- read_csv('WN2_v4.csv', locale = readr::locale(encoding = "latin1"))
+Water_Nexus <- read_csv('WN2_v11.csv', locale = readr::locale(encoding = "latin1"))
 region <- read_csv('Region_names.csv')
 b <- region$Regions
 
