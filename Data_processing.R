@@ -74,4 +74,13 @@ for (i in 1:nrow(water_nexus)){
 
 water_nexus <- water_nexus[,-1]
 
+# the sectors 
+
+first_sector <- which(colnames(water_nexus) == 'Water and agriculture')
+last_sector <- which(colnames(water_nexus) == 'Finance')
+
+for (i in first_sector:last_sector){
+    water_nexus[!is.na(water_nexus[,i]),i] <- colnames(water_nexus[i])
+}
+
 write.csv(water_nexus, "WN2_v12.csv", row.names = FALSE)

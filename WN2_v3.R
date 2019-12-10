@@ -20,13 +20,13 @@ library(DT)
 library(rworldmap)
 library(usethis)
 
-water_nexus <- read_csv('WN2_v10.csv', locale = readr::locale(encoding = "latin1"))
-first_country <- which(colnames(water_nexus) == 'Benin')
-last_country <- which(colnames(water_nexus) == 'Switzerland')
-first_lat <- which(colnames(water_nexus) == 'lat_Benin')
-last_lat <- which(colnames(water_nexus) == 'lat_Switzerland')
-first_long <- which(colnames(water_nexus) == 'long_Benin')
-last_long <- which(colnames(water_nexus) == 'long_Switzerland')
+water_nexus <- read_csv('WN2_v12.csv', locale = readr::locale(encoding = "latin1"))
+first_country <- which(colnames(water_nexus) == 'Afghanistan')
+last_country <- which(colnames(water_nexus) == 'Zimbabwe')
+first_lat <- which(colnames(water_nexus) == 'lat_Afghanistan')
+last_lat <- which(colnames(water_nexus) == 'lat_Zimbabwe')
+first_long <- which(colnames(water_nexus) == 'long_Afghanistan')
+last_long <- which(colnames(water_nexus) == 'long_Zimbabwe')
 first_sector <- which(colnames(water_nexus) == 'Water and agriculture')
 last_sector <- which(colnames(water_nexus) == 'Finance')
 
@@ -487,11 +487,6 @@ server <- function(input, output,session) {
             }
         }
         
-        first_country <- which(colnames(selecteddf) == 'Benin')
-        last_country <- which(colnames(selecteddf) == 'Switzerland')
-        first_sector <- which(colnames(selecteddf) == 'Water and agriculture')
-        last_sector <- which(colnames(selecteddf) == 'Finance')
-
         name <- selecteddf[, 1:4] %>% tidyr::unite(Name, remove = TRUE, sep = ", ", na.rm = TRUE)
         address <- selecteddf[, 8:11] %>% tidyr::unite(Address, remove = TRUE, sep = ", ", na.rm = TRUE)
         person <- selecteddf[, c(12,16)] %>% tidyr::unite(Person, remove = TRUE, sep = " - ", na.rm = TRUE)
