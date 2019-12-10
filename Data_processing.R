@@ -1,103 +1,77 @@
 library(tidyverse)
-
-# WN <- read_csv("WN2_v5.csv", locale = readr::locale(encoding = "latin1"))
-
-
-Water_Nexus <- read_csv('WN2_v11.csv', locale = readr::locale(encoding = "latin1"))
-region <- read_csv('Region_names.csv')
-b <- region$Regions
-
-Water_Nexus <- Water_Nexus %>% select(-b,b)
-
 library(rgeos)
 library(rworldmap)
+        
+water_nexus <- read_csv('WN2_v11.csv', locale = readr::locale(encoding = "latin1"))
+water_nexus <- water_nexus[1:(which(is.na(water_nexus$`N°`))[1]-1),]
+
+region <- read_csv('Region_names.csv')
+b <- region$Regions
+water_nexus <- water_nexus %>% select(-b) # remove regions 
+
 lat_long <- read_csv('lat_long.csv', locale = readr::locale(encoding = "latin1"))
 
-first_country <- which(colnames(Water_Nexus) == 'Benin')
-last_country <- which(colnames(Water_Nexus) == 'Switzerland')
-setdiff(colnames(WN[,first_country:last_country]),lat_long$Country)
-Water_Nexus$Response[Water_Nexus$Response == "Other (Please specify)"] <- "Other"
-Water_Nexus$Response[is.na(Water_Nexus$Response)] <- "Other"
-levels(as.factor(Water_Nexus$Response))
+# Remove NA columns
+water_nexus <- water_nexus[ , colSums(is.na(water_nexus)) < nrow(water_nexus)]
+
+#  connect with lat_long df
+first_country <- which(colnames(water_nexus) == 'Benin')
+last_country <- which(colnames(water_nexus) == 'Switzerland')
+setdiff(colnames(water_nexus[,first_country:last_country]),lat_long$Country)
+colnames(water_nexus)[ which(colnames(water_nexus) == 'Syrian Arab Republic')] <- "Syria"
+colnames(water_nexus)[ which(colnames(water_nexus) == 'Palestinian territories')] <- "Palestine"
+# colnames(water_nexus)[ which(colnames(water_nexus) == 'Afghanistan_1')] <- "Afghanistan"
+# colnames(water_nexus)[ which(colnames(water_nexus) == 'Iran (Islamic Republic of)')] <- "Iran"
+
+c <- setdiff(lat_long$Country,colnames(water_nexus[, first_country:last_country]))
+lat_long <- lat_long %>% filter(!(Country %in% c)) # remove the country is not 
+lat_long <- lat_long[order(lat_long$Country),]
 
 
-# different in country name in dataset and lat_long
+# Response column 
+water_nexus$Response[water_nexus$Response == "Other (Please specify)"] <- "Other"
+water_nexus$Response[is.na(water_nexus$Response)] <- "Other"
 
-setdiff(colnames(Water_Nexus[,30:226]),lat_long$Country)
+# order column name
 
-colnames(Water_Nexus)[ which(colnames(Water_Nexus) == 'Afghanistan_1')] <- "Afghanistan"
-colnames(Water_Nexus)[ which(colnames(Water_Nexus) == 'Iran (Islamic Republic of)')] <- "Iran"
-colnames(Water_Nexus)[ which(colnames(Water_Nexus) == 'Syrian Arab Republic')] <- "Syria"
-colnames(Water_Nexus)[ which(colnames(Water_Nexus) == 'Palestinian territories')] <- "Palestine"
-setdiff(colnames(Water_Nexus[,30:226]),lat_long$Country)
+x <- water_nexus[, first_country:last_country, drop = F] 
+x <- x[, order(names(x))]
 
+water_nexus[, first_country:last_country] <- NULL
+water_nexus <- bind_cols(water_nexus,x)
 
-# Making new lat and long  columns
+first_country <- which(colnames(water_nexus) == 'Afghanistan')
+last_country <- which(colnames(water_nexus) == 'Zimbabwe')
 
-b <- as.data.frame(matrix(data = NA, nrow = nrow(Water_Nexus), ncol = 227-30))
-colnames(b) <- paste("lat",colnames(Water_Nexus[,30:226]), sep = "_")
-WN2 <- bind_cols(Water_Nexus, b)
-colnames(b) <- paste("long",colnames(Water_Nexus[,30:226]), sep = "_")
-WN2 <- bind_cols(WN2, b)
+# Making new lat and long columns
 
+x_lat <- water_nexus[, first_country:last_country, drop = F]
+colnames(x_lat) <- paste("lat",colnames(water_nexus[,first_country:last_country]), sep = "_")
+x_long <- water_nexus[, first_country:last_country, drop = F]
+colnames(x_long) <- paste("long",colnames(water_nexus[,first_country:last_country]), sep = "_")
 
-
-for(i in 1:nrow(WN2)){
-    for(j in 30:226){
-        for(k in 1:nrow(lat_long)){
-            if(!is.na(WN2[i,j]) & WN2[i,j] == lat_long$Country[k]){
-                WN2[i,j+248] <- lat_long$x[k]
-                WN2[i, j+248+197] <- lat_long$y[k]
-            }
+for(i in 1:ncol(x)){
+    for(j in 1:nrow(x)){
+        if(!is.na(x[j,i])){
+            x[j,i] <- lat_long$Country[i]
+            x_lat[j,i] <- lat_long$x[i]
+            x_long[j,i] <- lat_long$y[i]
         }
     }
 }
 
 
-# write.csv(WN2, "WN2_v7.csv", row.names = FALSE)
-
-Water_Nexus$lat_Palestine[which(!is.na(Water_Nexus$Palestine))] <- lat_long$x[which(lat_long$Country == "Palestine")]
-Water_Nexus$long_Palestine[which(!is.na(Water_Nexus$Palestine))] <- lat_long$y[which(lat_long$Country == "Palestine")]
-
-Water_Nexus$`lat_Sao Tome & Principe`[which(!is.na(Water_Nexus$`Sao Tome & Principe`))] <- lat_long$x[which(lat_long$Country == "Sao Tome & Principe")]
-Water_Nexus$`long_Sao Tome & Principe`[which(!is.na(Water_Nexus$`Sao Tome & Principe`))] <- lat_long$y[which(lat_long$Country == "Sao Tome & Principe")]
-
-Water_Nexus$lat_Syria[which(!is.na(Water_Nexus$Syria))] <- lat_long$x[which(lat_long$Country == "Syria")]
-Water_Nexus$long_Syria[which(!is.na(Water_Nexus$Syria))] <- lat_long$y[which(lat_long$Country == "Syria")]
-Water_Nexus[63,53+445] <- Water_Nexus[72,53+445]
-Water_Nexus[63,53+248] <- Water_Nexus[72,53+248]
-
-# test
-a <- vector(mode = "character", 0)
-for (i in 30:226){
-    if(sum(which(is.na(Water_Nexus[,i])) != which(is.na(Water_Nexus[,i + 248]))) >0){
-        a <- c(a, i)
-    }
-}
-b <- vector(mode = "character", 0)
-for (i in 30:226){
-    if(sum(which(is.na(Water_Nexus[,i])) != which(is.na(Water_Nexus[,i + 445]))) >0){
-        b <- c(b, i)
-    }
-}
-
-# write.csv(Water_Nexus, "WN2_v8.csv", row.names = FALSE)
-
-# Remove NA columns
-
-for (i in 1:ncol(Water_Nexus)){
-    if(sum(!is.na(Water_Nexus[,i]))==0){
-        Water_Nexus[,i] <- NULL
-    }
-}
-
-# write.csv(Water_Nexus, "WN2_v9.csv", row.names = FALSE)
+water_nexus[, first_country:last_country] <- NULL
+water_nexus <- bind_cols(water_nexus, x, x_lat, x_long)
 
 # add https in the link of the website
 
-for (i in 1:nrow(Water_Nexus)){
-    if (!is.na(Water_Nexus$`Open-Ended Response`[i]) & str_detect(Water_Nexus$`Open-Ended Response`[i], "www") & !str_detect(Water_Nexus$`Open-Ended Response`[i], "http")){
-        Water_Nexus$`Open-Ended Response`[i] <- str_c("https://", Water_Nexus$`Open-Ended Response`[i], sep = "")
+for (i in 1:nrow(water_nexus)){
+    if (!is.na(water_nexus$`Open-Ended Response`[i]) & str_detect(water_nexus$`Open-Ended Response`[i], "www") & !str_detect(water_nexus$`Open-Ended Response`[i], "http")){
+        water_nexus$`Open-Ended Response`[i] <- str_c("https://", water_nexus$`Open-Ended Response`[i], sep = "")
     }
 }
-write.csv(Water_Nexus, "WN2_v10.csv", row.names = FALSE)
+
+water_nexus <- water_nexus[,-1]
+
+write.csv(water_nexus, "WN2_v12.csv", row.names = FALSE)
