@@ -1,9 +1,13 @@
 library(tidyverse)
 library(rgeos)
 library(rworldmap)
+library(feather)
         
-water_nexus <- read_csv('WN2_v11.csv', locale = readr::locale(encoding = "latin1"))
+water_nexus <- read_csv('WN2_v13.csv', locale = readr::locale(encoding = "latin1"))
 water_nexus <- water_nexus[1:(which(is.na(water_nexus$`N°`))[1]-1),]
+
+water_nexus <- water_nexus[,-1]
+water_nexus <- water_nexus[c(2:5,1,6:ncol(water_nexus))]
 
 region <- read_csv('Region_names.csv')
 b <- region$Regions
@@ -28,9 +32,9 @@ lat_long <- lat_long %>% filter(!(Country %in% c)) # remove the country is not
 lat_long <- lat_long[order(lat_long$Country),]
 
 
-# Response column 
-water_nexus$Response[water_nexus$Response == "Other (Please specify)"] <- "Other"
-water_nexus$Response[is.na(water_nexus$Response)] <- "Other"
+# Sector column 
+water_nexus$Sector[water_nexus$Sector == "Other (Please specify)"] <- "Other"
+water_nexus$Sector[is.na(water_nexus$Sector)] <- "Other"
 
 # order column name
 
@@ -72,7 +76,6 @@ for (i in 1:nrow(water_nexus)){
     }
 }
 
-water_nexus <- water_nexus[,-1]
 
 # the sectors 
 
@@ -83,4 +86,7 @@ for (i in first_sector:last_sector){
     water_nexus[!is.na(water_nexus[,i]),i] <- colnames(water_nexus[i])
 }
 
-write.csv(water_nexus, "WN2_v12.csv", row.names = FALSE)
+
+
+write.csv(water_nexus, "WN2_v14.csv", row.names = FALSE)
+write_feather(water_nexus, "WN2_v1.feather")

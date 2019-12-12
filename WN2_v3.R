@@ -18,9 +18,10 @@ library(RColorBrewer)
 library(rsconnect)
 library(DT)
 library(rworldmap)
-library(usethis)
+library(feather)
 
-water_nexus <- read_csv('WN2_v12.csv', locale = readr::locale(encoding = "latin1"))
+water_nexus <- read_feather("WN2_v1.feather")
+
 first_country <- which(colnames(water_nexus) == 'Afghanistan')
 last_country <- which(colnames(water_nexus) == 'Zimbabwe')
 first_lat <- which(colnames(water_nexus) == 'lat_Afghanistan')
@@ -29,6 +30,8 @@ first_long <- which(colnames(water_nexus) == 'long_Afghanistan')
 last_long <- which(colnames(water_nexus) == 'long_Zimbabwe')
 first_sector <- which(colnames(water_nexus) == 'Water and agriculture')
 last_sector <- which(colnames(water_nexus) == 'Finance')
+firstkw <- which(colnames(water_nexus) == 'Keyword 1')
+lastkw <- which(colnames(water_nexus) == 'Keyword 6')
 
 #### ui ####
 
@@ -47,7 +50,7 @@ ui <- dashboardPage(skin = "green",
                     conditionalPanel(condition = "input.tabs == 'info'",
                                      selectInput(inputId = "nation", label = "Select a country", 
                                                  choices = c(All = "All", "Partner countries", colnames(water_nexus)[first_country:last_country])),
-                                     selectInput(inputId = "research", label = "Select a sector",
+                                     selectInput(inputId = "research", label = "Select a field of expertise",
                                                  choices = c(All = "All", colnames(water_nexus)[first_sector:last_sector])),
                                      selectInput(inputId = "actors", label = "Select an actor", 
                                                  choices = c(All = "All", sort(water_nexus$`Name 1`)))
@@ -59,23 +62,23 @@ ui <- dashboardPage(skin = "green",
         tabItems(
             # About tab content ####
             tabItem(tabName = "about",
+                    # fluidRow(
+                    #     box(width = 12, 
+                    #         h2("About the dashboard"),
+                    #         hr(),
+                    #         h3("Belgian Actors in the Water Sector"),
+                    #         br(),
+                    #         h4(
+                    #             "This interactive Beldgian Actors dashboard aims to inventory, depict and provide a searchable database of the Belgian actors active in the water sector and international cooperation. The actors are multidisciplinary, including public sector,  NGO's, civil society, private sector, teaching/research institutes, and PPPs/ Networks.")
+                    #     )
+                    # ),
                     fluidRow(
                         box(width = 12, 
                             h2("About the dashboard"),
-                            hr(),
-                            h3("Belgian Actors in the Water Sector"),
+                            # hr(),
+                            # h3("Dataset of Directorate-General for Development Cooperation and Humanitarian Aid"),
                             br(),
-                            h4(
-                                "This interactive Beldgian Actors dashboard aims to inventory, depict and provide a searchable database of the Belgian actors active in the water sector and international cooperation. The actors are multidisciplinary, including public sector,  NGO's, civil society, private sector, teaching/research institutes, and PPPs/ Networks.")
-                        )
-                    ),
-                    fluidRow(
-                        box(width = 12, 
-                            h2("About the dataset"),
-                            hr(),
-                            h3("Dataset of Directorate-General for Development Cooperation and Humanitarian Aid"),
-                            br(),
-                            h4("Dataset covers 140 organisations from the public, private sector, NGOs and NPOs, that are working in water sector in Belgium. They have been interviewed to provide precise information about the activities of their organizations. In the end of the project, 170 organizations in total are expected to be interviewed."),
+                            h4("This interactive Belgian Actors dashboard aims to inventory and depict the Belgian actors active in the water sector and international cooperation, and provide a searchable database . The data have been collected through a survey with the actors. Although we aim the inventory to be as comprehensive as possible, it is likely that actors are still missing."),
                             br(),
                             h4("If you want to add or update the information of your organisation in this inventory, please fill in an excel file ",
                                a("here",
@@ -83,7 +86,45 @@ ui <- dashboardPage(skin = "green",
                                 "and send your application to: ",
                                a("waternexusbelgium@gmail.com",
                                  href = "mailto: waternexusbelgium@gmail.com")
-                               )
+                               ),
+                            br(),
+                            h4("In addition to contact data, actors were also invited to provide the following key information about their organisation and activities."),
+                            br(),
+                            h4("Sector:"),
+                            br(),
+                            h4("    -     Public agency (includes governments and institutional actors)"),
+                            h4("    -     Public utility / entreprise"),
+                            h4("    -     Government-recognised NGO"),
+                            h4("    -     NPO or 4th pillar organisation"),
+                            h4("    -     Research institute or team; Knowledge center"),
+                            h4("    -     Educational institution"),
+                            h4("    -     Private sector organisation"),
+                            h4("    -     Platform / group / center"),
+                            br(),
+                            h4("Field of expertise to be selected among the following list:"),
+                            br(),
+                            h4("    -     Water and agriculture"),
+                            h4("    -     Water and sustainable cities"),
+                            h4("    -     Hydropower"),
+                            h4("    -     Water sanitation and hygiene"),
+                            h4("    -     Water supply"),
+                            h4("    -     Waste water treatment"),
+                            h4("    -     Disaster risk management (floods and droughts)"),
+                            h4("    -     Water technology"),
+                            h4("    -     Equipment supply"),
+                            h4("    -     Water consultancy"),
+                            h4("    -     Data and information"),
+                            h4("    -     Research and development"),
+                            h4("    -     Education and training"),
+                            h4("    -     Water policy and governance"),
+                            h4("    -     Finance"),
+                            br(),
+                            h4("Countries where the actors have had activities over the course of the past 10 years"),
+                            br(),
+                            h4("The dashboard contains a set of filters to identify the actors  on the basis of these information elements. Each elements is also searchable by typing in"),
+                            br(),
+                            br(),
+                            h4("Last updated on 12/12/2019")
                         )
                     ),
                     fluidRow(
@@ -127,7 +168,7 @@ ui <- dashboardPage(skin = "green",
                         )
                     ),
                     fluidRow(
-                        box(title = "Project map", width = 12, height = 400, 
+                        box(title = "Countries where actors have had activities over the course of the past 10 years", width = 12, height = 400, 
                             leafletOutput("map", width = "100%", height = 400) # Can be changed
                         )
                     )
@@ -190,7 +231,7 @@ server <- function(input, output,session) {
     })
     
     observe({
-        updateSelectInput(session, inputId = "research", label = "Select a sector", choices = c("All", sort(sectorname())))
+        updateSelectInput(session, inputId = "research", label = "Select a field of expertise", choices = c("All", sort(sectorname())))
     })
     
     df_research <- reactive({
@@ -424,7 +465,7 @@ server <- function(input, output,session) {
 
         valueBox(
             value = ncol(selecteddf_v2),
-            subtitle = "Total sector",
+            subtitle = "Total field of expertise",
             icon = icon("folder-open"),
             color = "purple"
         )
@@ -494,10 +535,14 @@ server <- function(input, output,session) {
             tidyr::unite(`Active country`, remove = TRUE, sep = ", ", na.rm = TRUE)
         sector <- selecteddf[,first_sector:last_sector] %>% tidyr::unite(`Active sector`, remove = TRUE, sep = ", ", na.rm = TRUE)
         link <- selecteddf[, 28]
+        keywords <- selecteddf[,firstkw:lastkw] %>% tidyr::unite(`Active sector`, remove = TRUE, sep = ", ", na.rm = TRUE)
+        description <- selecteddf[,which(colnames(selecteddf) == 'Description')]
+        
 
-        selecteddf_v2 <- bind_cols(name, selecteddf[,5], address, person, selecteddf[,20], selecteddf[,24], link, selecteddf[,6], country, sector)
+        selecteddf_v2 <- bind_cols(name, selecteddf[,5], address, person, selecteddf[,20], selecteddf[,24], link, selecteddf[,6], country, sector, keywords, description)
         colnames(selecteddf_v2)[5:8] <- c("Email", "Telephone", "Website", "Organisation")
-
+        colnames(selecteddf_v2)[4] <- "Contact person"
+        colnames(selecteddf_v2)[10:12] <- c("Active field of expertise", "Keywords", "Description")
 
         DT::datatable({DT::datatable(selecteddf_v2)
             selecteddf_v2$Website <- paste0("<a href='",selecteddf_v2$Website,"' target='_blank'>",selecteddf_v2$Website,"</a>") # still have problems!!!
@@ -511,8 +556,10 @@ server <- function(input, output,session) {
             options = list(sDom  = '<"top"pB>t<"bottom"i>r',
                            pageLength = 5,
                            buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           dom = 't',
                            scrollX = TRUE,
-                           autoWidth = FALSE))
+                           fixedColumns = FALSE
+                           ))
     })
 
     # Output map in Info tab ####
@@ -572,22 +619,22 @@ server <- function(input, output,session) {
         }
 
         selecteddf_v2 <- selecteddf[,c(first_country:last_country, 6)] %>%
-            gather(key = "Country", value = "value", -Response, na.rm =TRUE)
+            gather(key = "Country", value = "value", -Sector, na.rm =TRUE)
 
         selecteddf_v3 <- selecteddf[,c(first_lat:last_lat, 6)] %>%
-            gather(key = "Lat", value = "value", -Response, na.rm =TRUE)
+            gather(key = "Lat", value = "value", -Sector, na.rm =TRUE)
 
         selecteddf_v4 <- selecteddf[,c(first_long:last_long, 6)] %>%
-            gather(key = "Long", value = "value", -Response, na.rm =TRUE)
+            gather(key = "Long", value = "value", -Sector, na.rm =TRUE)
 
 
         selecteddf_v2$lat <- selecteddf_v3$value
         selecteddf_v2$long <- selecteddf_v4$value
 
         selecteddf_v2 <- selecteddf_v2 %>%
-            group_by(Country, lat, long, Response) %>%
+            group_by(Country, lat, long, Sector) %>%
             summarise(n=n()) %>%
-            spread(key = Response, value = n)
+            spread(key = Sector, value = n)
 
         selecteddf_v2$Total <- rowSums(subset(selecteddf_v2, select = -c(Country, lat, long)), na.rm = TRUE)
 
