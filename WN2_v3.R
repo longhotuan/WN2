@@ -52,8 +52,8 @@ ui <- dashboardPage(skin = "green",
                                                  choices = c(All = "All", "Partner countries", colnames(water_nexus)[first_country:last_country])),
                                      selectInput(inputId = "research", label = "Select a field of expertise",
                                                  choices = c(All = "All", colnames(water_nexus)[first_sector:last_sector])),
-                                     selectInput(inputId = "actors", label = "Select an actor", 
-                                                 choices = c(All = "All", sort(water_nexus$`Name 1`)))
+                                     selectInput(inputId = "sector", label = "Select a sector", 
+                                                 choices = c(All = "All", sort(water_nexus$Sector)))
                                      )
         )
     ),
@@ -78,9 +78,9 @@ ui <- dashboardPage(skin = "green",
                             # hr(),
                             # h3("Dataset of Directorate-General for Development Cooperation and Humanitarian Aid"),
                             br(),
-                            h4("This interactive Belgian Actors dashboard aims to inventory and depict the Belgian actors active in the water sector and international cooperation, and provide a searchable database . The data have been collected through a survey with the actors. Although we aim the inventory to be as comprehensive as possible, it is likely that actors are still missing."),
+                            h5("This interactive Belgian Actors dashboard aims to inventory and depict the Belgian actors active in the water sector and international cooperation, and provide a searchable database . The data have been collected through a survey with the actors. Although we aim the inventory to be as comprehensive as possible, it is likely that actors are still missing."),
                             br(),
-                            h4("If you want to add or update the information of your organisation in this inventory, please fill in an excel file ",
+                            h5("If you want to add or update the information of your organisation in this inventory, please fill in an excel file ",
                                a("here",
                                  href="https://docs.google.com/spreadsheets/d/1njjBHyR9TTJDMQWwO29-TigGWO_lYlEPS-naOFpdpnU/edit#gid=2113514347"),
                                 "and send your application to: ",
@@ -88,43 +88,43 @@ ui <- dashboardPage(skin = "green",
                                  href = "mailto: waternexusbelgium@gmail.com")
                                ),
                             br(),
-                            h4("In addition to contact data, actors were also invited to provide the following key information about their organisation and activities."),
+                            h5("In addition to contact data, actors were also invited to provide the following key elements of information about their organisation and activities:"),
                             br(),
-                            h4("Sector:"),
+                            tags$b("Sector (to be selected among the following list):"),
                             br(),
-                            h4("    -     Public agency (includes governments and institutional actors)"),
-                            h4("    -     Public utility / entreprise"),
-                            h4("    -     Government-recognised NGO"),
-                            h4("    -     NPO or 4th pillar organisation"),
-                            h4("    -     Research institute or team; Knowledge center"),
-                            h4("    -     Educational institution"),
-                            h4("    -     Private sector organisation"),
-                            h4("    -     Platform / group / center"),
+                            h5("    -     Public agency (includes governments and institutional actors)"),
+                            h5("    -     Public utility / entreprise"),
+                            h5("    -     Government-recognised NGO"),
+                            h5("    -     NPO or 4th pillar organisation"),
+                            h5("    -     Research institute or team; Knowledge center"),
+                            h5("    -     Educational institution"),
+                            h5("    -     Private sector organisation"),
+                            h5("    -     Platform / group / center"),
                             br(),
-                            h4("Field of expertise to be selected among the following list:"),
+                            tags$b("Fields of expertise (to be selected among the following list):"),
                             br(),
-                            h4("    -     Water and agriculture"),
-                            h4("    -     Water and sustainable cities"),
-                            h4("    -     Hydropower"),
-                            h4("    -     Water sanitation and hygiene"),
-                            h4("    -     Water supply"),
-                            h4("    -     Waste water treatment"),
-                            h4("    -     Disaster risk management (floods and droughts)"),
-                            h4("    -     Water technology"),
-                            h4("    -     Equipment supply"),
-                            h4("    -     Water consultancy"),
-                            h4("    -     Data and information"),
-                            h4("    -     Research and development"),
-                            h4("    -     Education and training"),
-                            h4("    -     Water policy and governance"),
-                            h4("    -     Finance"),
+                            h5("    -     Water and agriculture"),
+                            h5("    -     Water and sustainable cities"),
+                            h5("    -     Hydropower"),
+                            h5("    -     Water sanitation and hygiene"),
+                            h5("    -     Water supply"),
+                            h5("    -     Waste water treatment"),
+                            h5("    -     Disaster risk management (floods and droughts)"),
+                            h5("    -     Water technology"),
+                            h5("    -     Equipment supply"),
+                            h5("    -     Water consultancy"),
+                            h5("    -     Data and information"),
+                            h5("    -     Research and development"),
+                            h5("    -     Education and training"),
+                            h5("    -     Water policy and governance"),
+                            h5("    -     Finance"),
                             br(),
-                            h4("Countries where the actors have had activities over the course of the past 10 years"),
+                            tags$b("Countries where the actors have had activities over the course of the past 10 years"),
                             br(),
-                            h4("The dashboard contains a set of filters to identify the actors  on the basis of these information elements. Each elements is also searchable by typing in"),
+                            h5("The dashboard contains a set of filters to identify the actors on the basis of these information elements. Each element is also searchable by typing in xxx rest of the text is missing"),
                             br(),
                             br(),
-                            h4("Last updated on 12/12/2019")
+                            h5("Last updated on 12/12/2019")
                         )
                     ),
                     fluidRow(
@@ -238,17 +238,17 @@ server <- function(input, output,session) {
         input$research
     })
     
-    # Actor
+    # Sector
     
-    actorname <- reactive({
+    orgname <- reactive({
         if(df_country() == "All"){
             sectorname <- df()
             if(df_research() == "All"){
-                actorname <- sectorname$`Name 1`
+                orgname <- sectorname$Sector
             } else {
-                actorname2 <- sectorname[!is.na(sectorname[, colnames(sectorname) == df_research()]),]
-                actorname <- actorname2$`Name 1`
-                actorname
+                orgname2 <- sectorname[!is.na(sectorname[, colnames(sectorname) == df_research()]),]
+                orgname <- orgname2$Sector
+                orgname
             }
         } else if(df_country() == "Partner countries"){
             m <-df()[, which(colnames(df()) %in% c("Benin", "Burkina Faso", "Burundi", "DR Congo", "Guinea", "Mali", "Morocco", 
@@ -256,30 +256,30 @@ server <- function(input, output,session) {
             sectorname <- df()[rowSums(is.na(m)) != ncol(m), ] # make sure the chosen column not entire NA 
             sectorname <- sectorname[complete.cases(sectorname[ ,1]),] # remove the one that has NA in all row
             if(df_research() == "All"){
-                actorname <- sectorname$`Name 1`
+                orgname <- sectorname$Sector
             } else {
-                actorname2 <- sectorname[!is.na(sectorname[, colnames(sectorname) == df_research()]),]
-                actorname <- actorname2$`Name 1`
+                orgname2 <- sectorname[!is.na(sectorname[, colnames(sectorname) == df_research()]),]
+                orgname <- orgname2$Sector
             }
             
         } else {
             sectorname <- df()[!is.na(df()[, colnames(df()) == df_country()]),]
             if(df_research() == "All"){
-                actorname <- sectorname$`Name 1`
+                orgname <- sectorname$Sector
             } else {
-                actorname2 <- sectorname[!is.na(sectorname[, colnames(sectorname) == df_research()]),]
-                actorname <- actorname2$`Name 1`
-                actorname
+                orgname2 <- sectorname[!is.na(sectorname[, colnames(sectorname) == df_research()]),]
+                orgname <- orgname2$Sector
+                orgname
             }
         }
     })
 
     observe({
-        updateSelectInput(session, inputId = "actors", label = "Select an actor", choices = c("All", sort(actorname())))
+        updateSelectInput(session, inputId = "sector", label = "Select a sector", choices = c("All", sort(orgname())))
     })
 
-    df_actor <- reactive({
-        input$actors
+    df_sector <- reactive({
+        input$sector
     })
     
     # Output valuebox in Info tab ####
@@ -287,17 +287,17 @@ server <- function(input, output,session) {
         if (df_country() == "All"){
             selecteddf2 <- df()
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf2$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf2$Sector == df_sector(),]
                 } 
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else {
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         } else if (df_country() == "Partner countries"){
@@ -306,33 +306,33 @@ server <- function(input, output,session) {
             selecteddf2 <- df()[rowSums(is.na(m)) != ncol(m), ] # make sure the chosen column not entire NA 
             selecteddf2 <- selecteddf2[complete.cases(selecteddf2[ ,1]),] # remove the one that has NA in all row
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf2$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf2$Sector == df_sector(),]
                 }
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else{
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         } else {
             selecteddf2 <- df()[!is.na(df()[, colnames(df()) == df_country()]),]
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf3$Sector == df_sector(),]
                 }
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else{
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         }
@@ -347,17 +347,17 @@ server <- function(input, output,session) {
         if (df_country() == "All"){
             selecteddf2 <- df()
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf2$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf2$Sector == df_sector(),]
                 } 
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else {
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         } else if (df_country() == "Partner countries"){
@@ -366,33 +366,33 @@ server <- function(input, output,session) {
             selecteddf2 <- df()[rowSums(is.na(m)) != ncol(m), ] # make sure the chosen column not entire NA 
             selecteddf2 <- selecteddf2[complete.cases(selecteddf2[ ,1]),] # remove the one that has NA in all row
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf2$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf2$Sector == df_sector(),]
                 }
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else{
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         } else {
             selecteddf2 <- df()[!is.na(df()[, colnames(df()) == df_country()]),]
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf3$Sector == df_sector(),]
                 }
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else{
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         }
@@ -411,17 +411,17 @@ server <- function(input, output,session) {
         if (df_country() == "All"){
             selecteddf2 <- df()
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf2$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf2$Sector == df_sector(),]
                 } 
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else {
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         } else if (df_country() == "Partner countries"){
@@ -430,33 +430,33 @@ server <- function(input, output,session) {
             selecteddf2 <- df()[rowSums(is.na(m)) != ncol(m), ] # make sure the chosen column not entire NA 
             selecteddf2 <- selecteddf2[complete.cases(selecteddf2[ ,1]),] # remove the one that has NA in all row
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf2$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf2$Sector == df_sector(),]
                 }
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else{
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         } else {
             selecteddf2 <- df()[!is.na(df()[, colnames(df()) == df_country()]),]
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf3$Sector == df_sector(),]
                 }
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else{
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         }
@@ -478,17 +478,17 @@ server <- function(input, output,session) {
         if (df_country() == "All"){
             selecteddf2 <- df()
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf2$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf2$Sector == df_sector(),]
                 } 
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else {
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         } else if (df_country() == "Partner countries"){
@@ -497,33 +497,33 @@ server <- function(input, output,session) {
             selecteddf2 <- df()[rowSums(is.na(m)) != ncol(m), ] # make sure the chosen column not entire NA 
             selecteddf2 <- selecteddf2[complete.cases(selecteddf2[ ,1]),] # remove the one that has NA in all row
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf2$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf2$Sector == df_sector(),]
                 }
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else{
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         } else {
             selecteddf2 <- df()[!is.na(df()[, colnames(df()) == df_country()]),]
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf3$Sector == df_sector(),]
                 }
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else{
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         }
@@ -536,13 +536,13 @@ server <- function(input, output,session) {
         sector <- selecteddf[,first_sector:last_sector] %>% tidyr::unite(`Active sector`, remove = TRUE, sep = ", ", na.rm = TRUE)
         link <- selecteddf[, 28]
         keywords <- selecteddf[,firstkw:lastkw] %>% tidyr::unite(`Active sector`, remove = TRUE, sep = ", ", na.rm = TRUE)
-        description <- selecteddf[,which(colnames(selecteddf) == 'Description')]
+        # description <- selecteddf[,which(colnames(selecteddf) == 'Description')]
         
 
-        selecteddf_v2 <- bind_cols(name, selecteddf[,5], address, person, selecteddf[,20], selecteddf[,24], link, selecteddf[,6], country, sector, keywords, description)
+        selecteddf_v2 <- bind_cols(name, selecteddf[,5], address, person, selecteddf[,20], selecteddf[,24], link, selecteddf[,6], country, sector, keywords)
         colnames(selecteddf_v2)[5:8] <- c("Email", "Telephone", "Website", "Organisation")
         colnames(selecteddf_v2)[4] <- "Contact person"
-        colnames(selecteddf_v2)[10:12] <- c("Active field of expertise", "Keywords", "Description")
+        colnames(selecteddf_v2)[10:11] <- c("Active field of expertise", "Keywords")
 
         DT::datatable({DT::datatable(selecteddf_v2)
             selecteddf_v2$Website <- paste0("<a href='",selecteddf_v2$Website,"' target='_blank'>",selecteddf_v2$Website,"</a>") # still have problems!!!
@@ -568,17 +568,17 @@ server <- function(input, output,session) {
         if (df_country() == "All"){
             selecteddf2 <- df()
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf2$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf2$Sector == df_sector(),]
                 } 
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else {
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         } else if (df_country() == "Partner countries"){
@@ -587,33 +587,33 @@ server <- function(input, output,session) {
             selecteddf2 <- df()[rowSums(is.na(m)) != ncol(m), ] # make sure the chosen column not entire NA 
             selecteddf2 <- selecteddf2[complete.cases(selecteddf2[ ,1]),] # remove the one that has NA in all row
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf2$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf2$Sector == df_sector(),]
                 }
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else{
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         } else {
             selecteddf2 <- df()[!is.na(df()[, colnames(df()) == df_country()]),]
             if(df_research() == "All"){
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2
                 } else {
-                    selecteddf <- selecteddf2[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf2[selecteddf3$Sector == df_sector(),]
                 }
             } else {
-                if(df_actor() == "All"){
+                if(df_sector() == "All"){
                     selecteddf <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
                 } else{
                     selecteddf3 <- selecteddf2[!is.na(selecteddf2[, colnames(selecteddf2) == df_research()]),]
-                    selecteddf <- selecteddf3[selecteddf3$`Name 1` == df_actor(),]
+                    selecteddf <- selecteddf3[selecteddf3$Sector == df_sector(),]
                 }
             }
         }
