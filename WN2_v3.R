@@ -80,12 +80,12 @@ ui <- dashboardPage(skin = "green",
                             br(),
                             h5("This interactive Belgian Actors dashboard aims to inventory and depict the Belgian actors active in the water sector and international cooperation, and provide a searchable database . The data have been collected through a survey with the actors. Although we aim the inventory to be as comprehensive as possible, it is likely that actors are still missing."),
                             br(),
-                            h5("If you want to add or update the information of your organisation in this inventory, please fill in an excel file ",
+                            h5("If you want to add or update the information of your organisation in this inventory, please do so ",
                                a("here",
-                                 href="https://docs.google.com/spreadsheets/d/1njjBHyR9TTJDMQWwO29-TigGWO_lYlEPS-naOFpdpnU/edit#gid=2113514347"),
-                                "and send your application to: ",
+                                 href="https://www.surveymonkey.com/r/5P87THP"),
+                               ". If you want to update your information, please send us an email at: ",
                                a("waternexusbelgium@gmail.com",
-                                 href = "mailto: waternexusbelgium@gmail.com")
+                                 href = "mailto: waternexusbelgium@gmail.com"), "and we will provide the instructions to do so."
                                ),
                             br(),
                             h5("In addition to contact data, actors were also invited to provide the following key elements of information about their organisation and activities:"),
@@ -121,7 +121,7 @@ ui <- dashboardPage(skin = "green",
                             br(),
                             tags$b("Countries where the actors have had activities over the course of the past 10 years"),
                             br(),
-                            h5("The dashboard contains a set of filters to identify the actors on the basis of these information elements. Each element is also searchable by typing in xxx rest of the text is missing"),
+                            h5("The dashboard contains a set of filters to identify the actors  on the basis of these information elements. Each elements is also searchable by typing in a word in the linked search bar. For example, one can search all the actors that listed “Groundwater” in their keywords by typing in “Groundwater” in the Keyword search bar."),
                             br(),
                             br(),
                             h5("Last updated on 12/12/2019")
@@ -545,7 +545,7 @@ server <- function(input, output,session) {
         colnames(selecteddf_v2)[10:11] <- c("Active field of expertise", "Keywords")
 
         DT::datatable({DT::datatable(selecteddf_v2)
-            selecteddf_v2$Website <- paste0("<a href='",selecteddf_v2$Website,"' target='_blank'>",selecteddf_v2$Website,"</a>") # still have problems!!!
+            selecteddf_v2$Website <- paste0("<a href='",selecteddf_v2$Website,"' target='_blank'>",selecteddf_v2$Website,"</a>")
             selecteddf_v2$Email <- paste0("<a href='mailto:", selecteddf_v2$Email, "'>",selecteddf_v2$Email, "</a>")
             selecteddf_v2
             }, escape = FALSE,
