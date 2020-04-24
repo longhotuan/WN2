@@ -2,16 +2,21 @@ library(tidyverse)
 library(rgeos)
 library(rworldmap)
 library(feather)
-        
-water_nexus <- read_csv('WN2_v13.csv', locale = readr::locale(encoding = "latin1"))
-water_nexus <- water_nexus[1:(which(is.na(water_nexus$`N°`))[1]-1),]
+
+water_nexus <- read_csv('data_24_04_20.csv', locale = readr::locale(encoding = "latin1"))
+for (i in 1:nrow(water_nexus)){ 
+    if(sum(is.na(water_nexus[i,])) == ncol(water_nexus)){
+        water_nexus <- water_nexus[-i,]
+    }
+}
+# water_nexus <- water_nexus[1:(which(is.na(water_nexus$`N°`))[1]-1),]
 
 water_nexus <- water_nexus[,-1]
 water_nexus <- water_nexus[c(2:5,1,6:ncol(water_nexus))]
 
 region <- read_csv('Region_names.csv')
 b <- region$Regions
-water_nexus <- water_nexus %>% select(-b) # remove regions 
+water_nexus <- water_nexus %>% dplyr::select(-intersect(colnames(water_nexus), b)) # remove regions 
 
 lat_long <- read_csv('lat_long.csv', locale = readr::locale(encoding = "latin1"))
 
@@ -36,6 +41,7 @@ lat_long <- lat_long[order(lat_long$Country),]
 water_nexus$Sector[water_nexus$Sector == "Other (Please specify)"] <- "Other"
 water_nexus$Sector[is.na(water_nexus$Sector)] <- "Other"
 
+
 # order column name
 
 x <- water_nexus[, first_country:last_country, drop = F] 
@@ -47,6 +53,11 @@ water_nexus <- bind_cols(water_nexus,x)
 first_country <- which(colnames(water_nexus) == 'Afghanistan')
 last_country <- which(colnames(water_nexus) == 'Zimbabwe')
 
+
+# change columns of x to character
+
+x <- rbind_list(lapply(x, as.character))
+
 # Making new lat and long columns
 
 x_lat <- water_nexus[, first_country:last_country, drop = F]
@@ -56,7 +67,7 @@ colnames(x_long) <- paste("long",colnames(water_nexus[,first_country:last_countr
 
 for(i in 1:ncol(x)){
     for(j in 1:nrow(x)){
-        if(!is.na(x[j,i])){
+        if(!is.na(x[j,i]) & i != 125){ # some thing wrong with Turkmenistan --> super weird!!!!!
             x[j,i] <- lat_long$Country[i]
             x_lat[j,i] <- lat_long$x[i]
             x_long[j,i] <- lat_long$y[i]
@@ -64,7 +75,11 @@ for(i in 1:ncol(x)){
     }
 }
 
-
+x_lat$lat_Turkmenistan[which(!is.na(x_lat$lat_Turkmenistan))] <- lat_long$x[which(lat_long$Country == "Turkmenistan")]
+x_long$long_Turkmenistan[which(!is.na(x_long$long_Turkmenistan))] <- lat_long$x[which(lat_long$Country == "Turkmenistan")]
+    
+    
+    
 water_nexus[, first_country:last_country] <- NULL
 water_nexus <- bind_cols(water_nexus, x, x_lat, x_long)
 
@@ -82,11 +97,11 @@ for (i in 1:nrow(water_nexus)){
 first_sector <- which(colnames(water_nexus) == 'Water and agriculture')
 last_sector <- which(colnames(water_nexus) == 'Finance')
 
-for (i in first_sector:last_sector){
-    water_nexus[!is.na(water_nexus[,i]),i] <- colnames(water_nexus[i])
+water_nexus[, first_sector:last_sector] <- rbind_list(lapply(water_nexus[, first_sector:last_sector], as.character))
+
+for (i in seq(first_sector, last_sector)){
+    water_nexus[as.logical(!is.na(water_nexus[,i])),i] <- colnames(water_nexus[i])
 }
 
-
-
-write.csv(water_nexus, "WN2_v14.csv", row.names = FALSE)
-write_feather(water_nexus, "WN2_v1.feather")
+write.csv(water_nexus, "WN2_v15.csv", row.names = FALSE)
+write_feather(water_nexus, "WN2_v2_23_04_20.feather")
